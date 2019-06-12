@@ -17,5 +17,5 @@ This project is licensed under the [MIT license](LICENSE).
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in `split-range` by you, shall be licensed as MIT, without any
+for inclusion in `range-split` by you, shall be licensed as MIT, without any
 additional terms or conditions.
