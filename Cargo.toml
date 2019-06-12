@@ -1,11 +1,11 @@
 [package]
-name = "strchunk"
+name = "split-range"
 version = "0.0.1-dev"
 authors = ["Mikhail Zabaluev <mikhail.zabaluev@gmail.com>"]
 edition = "2018"
 
 [features]
-specialization = []
+default = []
 
 [dependencies]
-bytes = "0.4"
+bytes = { version = "0.4", optional = true }
