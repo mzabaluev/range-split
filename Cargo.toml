@@ -5,7 +5,7 @@ authors = ["Mikhail Zabaluev <mikhail.zabaluev@gmail.com>"]
 edition = "2018"
 
 [features]
-default = []
+default = ["bytes"]
 
 [dependencies]
 bytes = { version = "0.4", optional = true }
