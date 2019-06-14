@@ -1,6 +1,33 @@
+//! Utilities for validating ranges on UTF-8 strings.
+
 use core::fmt::Debug;
 use core::ops::{Bound, RangeBounds};
 
+/// Asserts that the given range is valid for the given string slice.
+///
+/// The first parameter shall coerce to an `&str` reference.
+/// The second parameter shall be a reference to a value implementing
+/// the standard library traits `RangeBounds<usize>` and `Debug`.
+///
+/// The range is valid if it fits within the slice and its bounds are
+/// on UTF-8 code point boundaries. If either of these checks fails,
+/// `panic!` is invoked with a description of the failure.
+///
+/// # Examples
+///
+/// ```
+/// # use range_split::assert_str_range;
+/// let s = &"Hello";
+/// assert_str_range!(s, &(..=2));
+/// assert_str_range!(s, &(..0));
+/// assert_str_range!(s, &(5..));
+/// ```
+///
+/// ```should_panic
+/// # use range_split::assert_str_range;
+/// let s = "Привет".to_string();
+/// assert_str_range!(&s, &(..1)); // fails due to splitting a UTF-8 sequence
+/// ```
 #[macro_export]
 macro_rules! assert_str_range {
     ($s:expr, $r:expr) => {
@@ -10,6 +37,10 @@ macro_rules! assert_str_range {
     };
 }
 
+/// Checks that `range` is valid for splitting the string slice `s`.
+///
+/// The range is valid if it fits within the slice and its bounds are
+/// on UTF-8 code point boundaries.
 pub fn is_valid_range<S, R>(s: S, range: &R) -> bool
 where
     S: AsRef<str>,
@@ -92,6 +123,7 @@ fn validate_next_index(s: &str, index: usize) -> BoundValidity {
     }
 }
 
+#[doc(hidden)]
 #[cold]
 #[inline(never)]
 pub fn range_fail<R>(s: &str, range: &R) -> !
