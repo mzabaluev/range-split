@@ -45,6 +45,9 @@ pub mod mem;
 pub mod str;
 mod take_range;
 
+#[macro_use]
+mod impl_macro;
+
 #[cfg(feature = "bytes")]
 mod bytes;
 
