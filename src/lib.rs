@@ -46,6 +46,7 @@ pub mod str;
 mod take_range;
 
 #[macro_use]
+#[cfg_attr(not(feature = "bytes"), allow(unused_macros))]
 mod impl_macro;
 
 #[cfg(feature = "bytes")]
