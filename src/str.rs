@@ -5,8 +5,8 @@ use core::ops::{Bound, RangeBounds};
 
 /// Asserts that the given range is valid for the given string slice.
 ///
-/// The first parameter shall coerce to an `&str` reference.
-/// The second parameter shall be a reference to a value implementing
+/// The first parameter shall be of type implementing `AsRef<str>`.
+/// The second parameter shall be of type implementing
 /// the standard library traits `RangeBounds<usize>` and `Debug`.
 ///
 /// The range is valid if it fits within the slice and its bounds are
@@ -18,23 +18,28 @@ use core::ops::{Bound, RangeBounds};
 /// ```
 /// # use range_split::assert_str_range;
 /// let s = &"Hello";
-/// assert_str_range!(s, &(..=2));
-/// assert_str_range!(s, &(..0));
-/// assert_str_range!(s, &(5..));
+/// assert_str_range!(s, ..0);
+/// assert_str_range!(s, 5..);
+///
+/// let r = (..=2);
+/// assert_str_range!(s, r);
+/// let (head, tail) = s.as_bytes().split_at(r.end + 1);
 /// ```
 ///
 /// ```should_panic
 /// # use range_split::assert_str_range;
 /// let s = "Привет".to_string();
-/// assert_str_range!(&s, &(..1)); // fails due to splitting a UTF-8 sequence
+/// assert_str_range!(s, ..1); // fails due to splitting a UTF-8 sequence
 /// ```
 #[macro_export]
 macro_rules! assert_str_range {
-    ($s:expr, $r:expr) => {
-        if !$crate::str::is_valid_range($s, $r) {
-            $crate::str::range_fail($s, $r)
+    ($s:expr, $r:expr) => {{
+        let s = &$s;
+        let r = &$r;
+        if !$crate::str::is_valid_range(s, r) {
+            $crate::str::range_fail(s, r)
         }
-    };
+    }};
 }
 
 /// Checks that `range` is valid for splitting the string slice `s`.
@@ -125,8 +130,16 @@ fn validate_next_index(s: &str, index: usize) -> BoundValidity {
 
 #[doc(hidden)]
 #[cold]
+pub fn range_fail<S, R>(s: S, range: &R) -> !
+where
+    S: AsRef<str>,
+    R: RangeBounds<usize> + Debug,
+{
+    range_fail_internal(s.as_ref(), range)
+}
+
 #[inline(never)]
-pub fn range_fail<R>(s: &str, range: &R) -> !
+fn range_fail_internal<R>(s: &str, range: &R) -> !
 where
     R: RangeBounds<usize> + Debug,
 {
@@ -136,11 +149,22 @@ where
     let end_validity = validate_end_bound(s, range.end_bound());
     match (start_validity, end_validity) {
         (OutOfBuffer, _) | (_, OutOfBuffer) => {
-            panic!("range {:?} is out of bounds of the string buffer", range)
+            panic!("range {:?} is out of bounds", range)
         }
         (NotCharBoundary, _) | (_, NotCharBoundary) => {
             panic!("range {:?} does not split on a UTF-8 boundary", range)
         }
         (Valid, Valid) => unreachable!("there was no problem with the range"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn assert_str_range_borrows() {
+        let s = String::new();
+        let r = 0..0;
+        assert_str_range!(s, r);
+        let _ = (s, r);
     }
 }
