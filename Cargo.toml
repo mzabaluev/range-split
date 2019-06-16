@@ -1,8 +1,14 @@
 [package]
 name = "range-split"
-version = "0.0.1-dev"
-authors = ["Mikhail Zabaluev <mikhail.zabaluev@gmail.com>"]
+version = "0.1.0-beta.1"
 edition = "2018"
+authors = ["Mikhail Zabaluev <mikhail.zabaluev@gmail.com>"]
+description = "Utilities for splitting sequences with range parameters"
+repository = "https://github.com/mzabaluev/range-split"
+readme = "README.md"
+license = "MIT"
+keywords = ["collections", "buffers"]
+categories = ["data-structures", "rust-patterns"]
 
 [features]
 default = ["bytes"]
