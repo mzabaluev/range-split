@@ -1,6 +1,6 @@
 use crate::mem;
 
-use bytes::{Bytes, BytesMut};
+use bytes::{Buf, Bytes, BytesMut};
 
 use std::ops::{RangeFrom, RangeFull, RangeTo, RangeToInclusive};
 
@@ -18,7 +18,7 @@ impl_take_range! {
     <RangeFull> for BytesMut {
         #[inline]
         fn take_range(&mut self, _range) {
-            self.take()
+            self.split()
         }
         #[inline]
         fn remove_range(&mut self, _range) {
