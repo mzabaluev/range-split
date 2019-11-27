@@ -41,6 +41,8 @@
 #![warn(missing_docs)]
 #![warn(clippy::all)]
 
+#![no_std]
+
 pub mod mem;
 pub mod str;
 mod take_range;

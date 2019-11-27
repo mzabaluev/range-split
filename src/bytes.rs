@@ -2,7 +2,7 @@ use crate::mem;
 
 use bytes::{Buf, Bytes, BytesMut};
 
-use std::ops::{RangeFrom, RangeFull, RangeTo, RangeToInclusive};
+use core::ops::{RangeFrom, RangeFull, RangeTo, RangeToInclusive};
 
 impl_take_range! {
     <RangeFull> for Bytes {
