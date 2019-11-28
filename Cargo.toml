@@ -1,6 +1,6 @@
 [package]
 name = "range-split"
-version = "0.2.0-beta.1"
+version = "0.2.0-beta.2"
 edition = "2018"
 authors = ["Mikhail Zabaluev <mikhail.zabaluev@gmail.com>"]
 description = "Utilities for splitting sequences with range parameters"
