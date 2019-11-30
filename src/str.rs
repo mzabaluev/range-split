@@ -51,79 +51,70 @@ where
     R: RangeBounds<usize>,
 {
     let s = s.as_ref();
-    validate_start_bound(s, range.start_bound()).is_valid()
-        && validate_end_bound(s, range.end_bound()).is_valid()
+    validate_start_bound(s, range.start_bound()).is_ok()
+        && validate_end_bound(s, range.end_bound()).is_ok()
 }
 
-enum BoundValidity {
-    Valid,
+enum InvalidBound {
     OutOfBuffer,
     NotCharBoundary,
 }
 
-impl BoundValidity {
-    #[inline]
-    fn is_valid(&self) -> bool {
-        use BoundValidity::*;
-
-        match self {
-            Valid => true,
-            _ => false,
-        }
-    }
-}
-
 #[inline]
-fn validate_start_bound(s: &str, bound: Bound<&usize>) -> BoundValidity {
+fn validate_start_bound(
+    s: &str,
+    bound: Bound<&usize>,
+) -> Result<(), InvalidBound> {
     use Bound::*;
-    use BoundValidity::*;
 
     match bound {
-        Unbounded => Valid,
+        Unbounded => Ok(()),
         Included(index) => validate_index(s, *index),
         Excluded(index) => validate_next_index(s, *index),
     }
 }
 
 #[inline]
-fn validate_end_bound(s: &str, bound: Bound<&usize>) -> BoundValidity {
+fn validate_end_bound(
+    s: &str,
+    bound: Bound<&usize>,
+) -> Result<(), InvalidBound> {
     use Bound::*;
-    use BoundValidity::*;
 
     match bound {
-        Unbounded => Valid,
+        Unbounded => Ok(()),
         Excluded(index) => validate_index(s, *index),
         Included(index) => validate_next_index(s, *index),
     }
 }
 
 #[inline]
-fn validate_index(s: &str, index: usize) -> BoundValidity {
-    use BoundValidity::*;
+fn validate_index(s: &str, index: usize) -> Result<(), InvalidBound> {
+    use InvalidBound::*;
 
     // .is_char_boundary() fails on OOB as well, but we check it as
     // the fast path first and discern the failure cause later.
     if s.is_char_boundary(index) {
-        Valid
+        Ok(())
     } else if index > s.len() {
-        OutOfBuffer
+        Err(OutOfBuffer)
     } else {
-        NotCharBoundary
+        Err(NotCharBoundary)
     }
 }
 
 #[inline]
-fn validate_next_index(s: &str, index: usize) -> BoundValidity {
-    use BoundValidity::*;
+fn validate_next_index(s: &str, index: usize) -> Result<(), InvalidBound> {
+    use InvalidBound::*;
 
     // The check for OOB also rules out integer overflow in index + 1
     if index >= s.len() {
         #[cold]
-        OutOfBuffer
+        Err(OutOfBuffer)
     } else if s.is_char_boundary(index + 1) {
-        Valid
+        Ok(())
     } else {
-        NotCharBoundary
+        Err(NotCharBoundary)
     }
 }
 
@@ -142,18 +133,18 @@ fn range_fail_internal(
     start_bound: Bound<&usize>,
     end_bound: Bound<&usize>,
 ) -> ! {
-    use BoundValidity::*;
+    use InvalidBound::*;
 
     let start_validity = validate_start_bound(s, start_bound);
     let end_validity = validate_end_bound(s, end_bound);
     let r = (start_bound, end_bound);
     match (start_validity, end_validity) {
-        (OutOfBuffer, _) | (_, OutOfBuffer) => {
+        (Err(OutOfBuffer), _) | (_, Err(OutOfBuffer)) => {
             panic!("range {:?} is out of bounds", r)
         }
-        (NotCharBoundary, _) | (_, NotCharBoundary) => {
+        (Err(NotCharBoundary), _) | (_, Err(NotCharBoundary)) => {
             panic!("range {:?} does not split on a UTF-8 boundary", r)
         }
-        (Valid, Valid) => unreachable!("there was no problem with the range"),
+        (Ok(()), Ok(())) => unreachable!("there was no problem with the range"),
     }
 }
