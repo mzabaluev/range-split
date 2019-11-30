@@ -1,13 +1,12 @@
 //! Utilities for validating ranges on UTF-8 strings.
 
-use core::fmt::Debug;
 use core::ops::{Bound, RangeBounds};
 
 /// Asserts that the given range is valid for the given string slice.
 ///
-/// The first parameter shall be of type implementing `AsRef<str>`.
-/// The second parameter shall be of type implementing
-/// the standard library traits `RangeBounds<usize>` and `Debug`.
+/// The first parameter shall be of a type implementing `AsRef<str>`.
+/// The second parameter shall be of a type implementing
+/// the standard library trait `RangeBounds<usize>`.
 ///
 /// The range is valid if it fits within the slice and its bounds are
 /// on UTF-8 code point boundaries. If either of these checks fails,
@@ -17,7 +16,7 @@ use core::ops::{Bound, RangeBounds};
 ///
 /// ```
 /// # use range_split::assert_str_range;
-/// let s = &"Hello";
+/// let s = "Hello";
 /// assert_str_range!(s, ..0);
 /// assert_str_range!(s, 5..);
 ///
@@ -133,26 +132,27 @@ fn validate_next_index(s: &str, index: usize) -> BoundValidity {
 pub fn range_fail<S, R>(s: S, range: &R) -> !
 where
     S: AsRef<str>,
-    R: RangeBounds<usize> + Debug,
+    R: RangeBounds<usize>,
 {
-    range_fail_internal(s.as_ref(), range)
+    range_fail_internal(s.as_ref(), range.start_bound(), range.end_bound())
 }
 
-#[inline(never)]
-fn range_fail_internal<R>(s: &str, range: &R) -> !
-where
-    R: RangeBounds<usize> + Debug,
-{
+fn range_fail_internal(
+    s: &str,
+    start_bound: Bound<&usize>,
+    end_bound: Bound<&usize>,
+) -> ! {
     use BoundValidity::*;
 
-    let start_validity = validate_start_bound(s, range.start_bound());
-    let end_validity = validate_end_bound(s, range.end_bound());
+    let start_validity = validate_start_bound(s, start_bound);
+    let end_validity = validate_end_bound(s, end_bound);
+    let r = (start_bound, end_bound);
     match (start_validity, end_validity) {
         (OutOfBuffer, _) | (_, OutOfBuffer) => {
-            panic!("range {:?} is out of bounds", range)
+            panic!("range {:?} is out of bounds", r)
         }
         (NotCharBoundary, _) | (_, NotCharBoundary) => {
-            panic!("range {:?} does not split on a UTF-8 boundary", range)
+            panic!("range {:?} does not split on a UTF-8 boundary", r)
         }
         (Valid, Valid) => unreachable!("there was no problem with the range"),
     }
