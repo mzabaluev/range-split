@@ -32,10 +32,7 @@ impl_take_range! {
         }
         #[inline]
         fn remove_range(&mut self, range) {
-            // Work around a regression in Bytes::truncate, see
-            // https://github.com/tokio-rs/bytes/pull/333
-            self.split_off(range.start);
-            // self.truncate(range.start)
+            self.truncate(range.start)
         }
     }
     <RangeFrom<usize>> for BytesMut {

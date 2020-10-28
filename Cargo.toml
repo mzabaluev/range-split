@@ -14,4 +14,4 @@ categories = ["data-structures", "rust-patterns"]
 default = ["bytes"]
 
 [dependencies]
-bytes = { version = "0.5", optional = true }
+bytes = { version = "0.6", optional = true }
