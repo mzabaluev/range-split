@@ -109,7 +109,6 @@ fn validate_next_index(s: &str, index: usize) -> Result<(), InvalidBound> {
 
     // The check for OOB also rules out integer overflow in index + 1
     if index >= s.len() {
-        #[cold]
         Err(OutOfBuffer)
     } else if s.is_char_boundary(index + 1) {
         Ok(())
