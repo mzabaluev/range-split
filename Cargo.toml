@@ -1,6 +1,6 @@
 [package]
 name = "range-split"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2018"
 authors = ["Mikhail Zabaluev <mikhail.zabaluev@gmail.com>"]
 description = "Utilities for splitting sequences with range parameters"
@@ -14,4 +14,4 @@ categories = ["data-structures", "rust-patterns"]
 default = ["bytes"]
 
 [dependencies]
-bytes = { version = "0.6", optional = true }
+bytes = { version = "1.0", optional = true }
